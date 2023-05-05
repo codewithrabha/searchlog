@@ -6,5 +6,4 @@ This PHP function logs the search keywords used on a WordPress website, along wi
 2. Create 'search_keyword' (Custom filed) for your CCT.
 3. Create 'ip_addresses' (Custom filed) for your CCT.
 4.Create 'search_count' (Custom filed) for your CCT.
-5. Change the OpenSSL Secret key as per your wish.  
-
+5. Change the OpenSSL Secret key as per your wish.
