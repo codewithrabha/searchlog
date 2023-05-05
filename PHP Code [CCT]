@@ -1,0 +1,61 @@
+function search_keywords($query) {
+    if (is_admin() || !$query->is_main_query()) {
+        return;
+    }
+
+    if ($query->is_search()) {
+        global $wpdb;
+        $searched_keyword = get_search_query();
+        $searched_keyword = strtolower($searched_keyword);
+
+        $search_log = $wpdb->get_row("SELECT * FROM wp_jet_cct_search_log WHERE search_keyword = '$searched_keyword'");
+
+        if ($search_log) {
+            $search_count = $search_log->search_count;
+            $search_count = $search_count ? $search_count + 1 : 1;
+            $wpdb->update(
+                'wp_jet_cct_search_log',
+                array('search_count' => $search_count),
+                array('_ID' => $search_log->_ID)
+            );
+
+            // get existing ip addresses and update the array
+            if (!empty($search_log->ip_addresses)) {
+                $ip_addresses = openssl_decrypt($search_log->ip_addresses, 'aes-256-ctr', 'msct', 0, '214365870351654844');
+                $ip_addresses = unserialize($ip_addresses);
+            } else {
+                $ip_addresses = array();
+            }
+
+            // encrypt and store the current IP address
+            $encrypted_ip = openssl_encrypt($_SERVER['REMOTE_ADDR'], 'aes-256-ctr', 'msct', 0, '214365870351654844');
+            if (!in_array($encrypted_ip, $ip_addresses)) {
+                $ip_addresses[] = $encrypted_ip;
+                $ip_addresses = serialize($ip_addresses);
+                $ip_addresses = openssl_encrypt($ip_addresses, 'aes-256-ctr', 'msct', 0, '214365870351654844');
+                $wpdb->update(
+                    'wp_jet_cct_search_log',
+                    array('ip_addresses' => $ip_addresses),
+                    array('_ID' => $search_log->_ID)
+                );
+            }
+        } else {
+            $search_count = 1;
+            $encrypted_ip = openssl_encrypt($_SERVER['REMOTE_ADDR'], 'aes-256-ctr', 'msct', 0, '214365870351654844');
+            $ip_addresses = array($encrypted_ip);
+            $ip_addresses = serialize($ip_addresses);
+            $ip_addresses = openssl_encrypt($ip_addresses, 'aes-256-ctr', 'msct', 0, '214365870351654844');
+
+            $wpdb->insert(
+                'wp_jet_cct_search_log',
+                array(
+                    'search_keyword' => $searched_keyword,
+                    'search_count' => $search_count,
+                    'ip_addresses' => $ip_addresses,
+                )
+            );
+        }
+    }
+}
+
+add_action('pre_get_posts', 'search_keywords');
