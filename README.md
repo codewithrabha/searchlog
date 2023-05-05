@@ -7,7 +7,7 @@ This PHP function logs the search keywords used on a WordPress website, along wi
 4. Create 'search_count' (Custom filed) for your CCT.
 5. Change the OpenSSL Secret key as per your wish.
 
-This code is a WordPress plugin that logs search keywords and IP addresses of users who search for those keywords on a website. The plugin is triggered when a user performs a search on the website and the pre_get_posts action is fired.
+This code create logs of search keywords and IP addresses of users who search for those keywords on a website. The plugin is triggered when a user performs a search on the website and the pre_get_posts action is fired.
 
 The search_keywords() function first checks if the current user is an administrator or if the current query is not the main query, and if either condition is met, it returns without doing anything. This is to ensure that the logging functionality is only executed for non-admin users and for the main search query.
 
